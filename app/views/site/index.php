@@ -18,7 +18,7 @@ $this->title = 'Market overview';
                 animationEnabled: true,
                 theme: "dark2",
                 title:{
-                    text: "<?php echo $key; ?>, <?php echo $d[count($d)-1]['buy']; ?>"
+                    text: "<?php echo $key; ?>, <?php echo $d[count($d)-1]['sell']; ?>"
                 },
                 axisX:{
                     valueFormatString: "HH:mm:ss"
