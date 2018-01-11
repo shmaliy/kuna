@@ -58,9 +58,9 @@ $this->title = 'Market overview';
                         showInLegend: true,
                         name: "Buy",
 //                        markerType: "square",
-                        
+                        lineDashType: "dash",
                         xValueFormatString: "HH:mm:ss",
-                        color: "#ff6600",
+                        color: "#cccc99",
                         yValueFormatString: "#",
                         dataPoints: [
                             <?php foreach ($d as $i=>$r): ?>
@@ -72,9 +72,9 @@ $this->title = 'Market overview';
                         type: "line",
                         showInLegend: true,
                         name: "Sell",
-                        lineDashType: "dash",
+                        color: "#ff6600",
                         yValueFormatString: "#",
-                        color: "#cccc99",
+                        
                         dataPoints: [
                             <?php foreach ($d as $i=>$r): ?>
                             { x: new Date(<?php echo $r['timestamp']*1000; ?>), y: <?php echo $r['sell']; ?> }<?php if ($i-1 < count($d)) echo ", "; ?>
