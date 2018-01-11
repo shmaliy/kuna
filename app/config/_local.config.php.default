@@ -1,0 +1,8 @@
+<?php
+const MYSQL_HOST = 'localhost';
+const MYSQL_PORT = '3306';
+const MYSQL_DB_NAME = 'crypto';
+const MYSQL_USER = 'nucleus_us';
+const MYSQL_PASSWORD = 'YaeKHdm5q6eaWU7vFDc6T8YKj';
+
+const SECURITY_PASS_SALT = 'fhksdhhhfhhfjsh5555';
