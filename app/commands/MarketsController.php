@@ -23,9 +23,6 @@ class MarketsController extends Controller
 {
     public function actionIndex()
     {
-        for($i = 0; $i < 6; $i++) {
-            MarketSeek::seek(MarketSeek::MARKET_ethuah);
-            sleep(4);
-        }
+        MarketSeek::seek(MarketSeek::MARKET_ethuah);
     }
 }

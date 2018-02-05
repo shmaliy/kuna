@@ -21,6 +21,8 @@ use Yii;
  * @property string $created
  * @property string $day
  * @property string $time
+ * @property array $ticker
+ * @property string $tickerMarket
  */
 class MarketSeek extends \yii\db\ActiveRecord
 {
@@ -38,6 +40,9 @@ class MarketSeek extends \yii\db\ActiveRecord
         self::MARKET_bchuah,
     ];
     
+    public $ticker;
+    public $tickerMarket;
+    
     /**
      * @inheritdoc
      */
@@ -54,9 +59,9 @@ class MarketSeek extends \yii\db\ActiveRecord
         return [
             [['at', 'buy', 'sell', 'low', 'high', 'last', 'vol', 'price'], 'required'],
             [['timestamp', 'at'], 'integer'],
-            [['market'], 'string'],
+            [['market', 'tickerMarket'], 'string'],
             [['buy', 'sell', 'low', 'high', 'last', 'vol', 'price'], 'number'],
-            [['created', 'day', 'time'], 'safe'],
+            [['created', 'day', 'time', 'ticker'], 'safe'],
     
             [['timestamp'], 'default', 'value' => time()],
             [['market'], 'default', 'value' => self::MARKET_ethuah],
@@ -118,16 +123,47 @@ class MarketSeek extends \yii\db\ActiveRecord
         }
     }
     
+    public function addTicker()
+    {
+        $this->at = $this->ticker['at'];
+        $this->market = $this->tickerMarket;
+        $this->attributes = $this->ticker['ticker'];
+        if ($this->validate()) {
+            $this->save();
+//            var_export($this->getAttributes());
+        } else {
+            var_export($this->getErrors());
+        }
+        echo "\n\n";
+    }
+    
+    public static function getLastPrice()
+    {
+        $row = self::find()
+            ->orderBy('timestamp desc')
+            ->one();
+        if (is_null($row)) return 0;
+        return $row->last;
+        
+    }
+    
     public function getCharts()
     {
+        $currDay = self::find()
+            ->orderBy('day desc')
+            ->one();
+        if (is_null($currDay)) return [];
+        
+        
         $list = self::find()
             ->where('market = :m', [':m' => $this->market])
-            ->orderBy('day desc')
+            ->andWhere('day = :d', [':d' => $currDay->day])
+            ->orderBy('timestamp')
             ->all();
         $ret = [];
         /** @var MarketSeek $row */
         foreach ($list as $row) {
-            $ret[$row->day][] = $row->getAttributes();
+            $ret[] = $row->getAttributes();
         }
         
         return $ret;

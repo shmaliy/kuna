@@ -20,12 +20,6 @@ use Yii;
  * @property string $lastLogin
  * @property string $created
  * @property string $updated
- *
- * @property UserRole $userRole
- * @property UserStatus $userStatus
- * @property UserAuthorFollowing[] $followers
- * @property UserAuthorFollowing[] $following
- * @property Post[] $posts
  */
 class User extends \yii\db\ActiveRecord  implements \yii\web\IdentityInterface
 {
@@ -51,7 +45,6 @@ class User extends \yii\db\ActiveRecord  implements \yii\web\IdentityInterface
             [['email', 'firstname', 'lastname', 'username'], 'required'],
             [['role'], 'integer'],
             [['ethWallet'], 'unique'],
-            [['role'], 'exist', 'targetClass' => UserRole::className(), 'targetAttribute' => 'id'],
             [['status', 'approved'], 'integer', 'min' => self::NO, 'max' => self::YES],
             [['lastLogin', 'created', 'updated'], 'safe'],
             [['email', 'username'], 'string', 'max' => 50],
@@ -89,32 +82,6 @@ class User extends \yii\db\ActiveRecord  implements \yii\web\IdentityInterface
 		return self::findOne($id);
 	}
 
-	public function getUserStatus()
-	{
-		return self::hasOne(UserStatus::className(), ['id' => 'status']);
-	}
-
-	public function getUserRole()
-	{
-		return self::hasOne(UserRole::className(), ['id' => 'role']);
-	}
-
-	public function getFollowers()
-	{
-		return self::hasMany(UserAuthorFollowing::className(), ['authorId' => 'id'])
-		           ->joinWith('follower fol');
-	}
-
-	public function getFollowing()
-	{
-		return self::hasMany(UserAuthorFollowing::className(), ['userId' => 'id'])
-		           ->joinWith('user us');
-	}
-
-	public function getPosts()
-	{
-		return self::hasMany(Post::className(), ['userId' => 'id'])->onCondition('published = 1 and deleted = 0');
-	}
 
 	/**
 	 * @inheritdoc
@@ -198,31 +165,19 @@ class User extends \yii\db\ActiveRecord  implements \yii\web\IdentityInterface
     	return $query->one();
 
     }
-
-    public function getAuthors($me)
+    
+    public static function login($email, $password)
     {
-    	return self::find()
-		    ->joinWith('followers f')
-		    ->joinWith('posts p')
-		    ->where('{{%user}}.role = 2 and {{%user}}.status = 1')
-		    ->orderBy('created desc')
-		    ->all();
+        $user = self::findOne([
+            'email' => $email,
+            'password' => self::hashPassword($password)
+        ]);
+        
+        if (is_null($user)) return false;
+        
+        Yii::$app->user->login($user, 3600*24*30);
+        return true;
+        
     }
 
-    public function relationStatus($me)
-    {
-	    $row = UserAuthorFollowing::findOne([
-	    	'authorId' => $this->id,
-		    'userId' => $me->id,
-		    'active' => 1
-	    ]);
-
-	    if (!is_null($row)) return 1;
-	    return 0;
-    }
-
-    public function getAuthorUrl()
-    {
-    	return '/user/' . $this->username;
-    }
 }

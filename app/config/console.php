@@ -16,6 +16,9 @@ $config = [
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
+        'console' => [
+            'class' => '\app\components\TConsoleRunner'
+        ],
         'cuna' => [
             'class' => 'app\components\Cuna',
             'protocol' => 'https://',
