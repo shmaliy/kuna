@@ -27,7 +27,7 @@ class Param extends \yii\db\ActiveRecord
     const P_sell = 'sell';
     const P_sellNow = 'sellNow';
     const P_sellOrderNow = 'sellOrderNow';
-    const P_buyOrderNow = 'iterationTimeout';
+    const P_buyOrderNow = 'buyOrderNow';
     const P_buyOrderLifetime = 'buyOrderLifetime';
     const P_sellOrderLifetime = 'sellOrderLifetime';
     

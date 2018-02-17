@@ -10,6 +10,7 @@ namespace app\commands;
 use app\models\ActiveOrders;
 use app\models\Iterations;
 use app\models\MarketSeek;
+use app\models\Param;
 use function GuzzleHttp\Psr7\parse_query;
 use yii\console\Controller;
 use yii\console\ExitCode;
@@ -33,16 +34,6 @@ class TradingController extends Controller
         var_export(ActiveOrders::me());
     }
     
-    public function actionActiveOrders()
-    {
-        var_export(ActiveOrders::getActiveOrders());
-    }
-    
-    public function actionTradingHistory()
-    {
-        var_export(ActiveOrders::getTradingHistory());
-    }
-    
     public function actionTrade($userId)
     {
         ActiveOrders::trade($userId);
@@ -51,8 +42,19 @@ class TradingController extends Controller
     public function actionStart($userId)
     {
         $iteration = Iterations::getRow($userId);
+        $config = new Param();
+        $config->userId = $userId;
+        $config = $config->getParams();
         
-        if (time() - $iteration->localTs > 20) {
+        foreach ($config as $param) {
+            if ($param['name'] == Param::P_iterationTimeout) {
+                $config = $param;
+                break;
+            }
+        }
+        
+        if (time() - $iteration->localTs > $config['value'] * 1.5) {
+            
             try {
                 $string =  shell_exec('pgrep -f trading/trade');
                 if (intval($string) != 0) {
@@ -64,7 +66,7 @@ class TradingController extends Controller
                 }
         
                 $path = dirname(dirname(__FILE__));
-                $cmd = "php " . $path . '/yii trading/trade' . $userId . ' > /dev/null 2>&1 &';
+                $cmd = "php " . $path . '/yii trading/trade ' . $userId . ' > /dev/null 2>&1 &';
                 echo $cmd, "\n";
                 exec($cmd);
         

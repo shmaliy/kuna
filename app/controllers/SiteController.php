@@ -92,6 +92,67 @@ class SiteController extends Controller
         ]);
     }
     
+    public function actionToggleTrade()
+    {
+        /** @var User $me */
+        $me = Yii::$app->user->getIdentity();
+        if (is_null($me)) {
+            return json_encode([
+                'status' => false,
+                'data' => [],
+                'message' => '',
+                'authorized' => false
+            ]);
+        }
+        if (Yii::$app->request->isPost && isset(Yii::$app->request->post()['trading'])) {
+            $exist = Param::findOne(['userId' => $me->id, 'name' => Param::P_trading]);
+            $exist->value = Yii::$app->request->post()['trading'];
+            $exist->save();
+            return json_encode([
+                'status' => true,
+                'data' => ['trading' => $exist->value],
+                'message' => '',
+                'authorized' => true
+            ]);
+        }
+    }
+    
+    public function actionSaveParams()
+    {
+        /** @var User $me */
+        $me = Yii::$app->user->getIdentity();
+        if (is_null($me)) {
+            return json_encode([
+                'status' => false,
+                'data' => [],
+                'message' => '',
+                'authorized' => false
+            ]);
+        }
+        if (Yii::$app->request->isPost) {
+            $list = Param::findAll(['userId' => $me->id]);
+            
+            $ret = [];
+            
+            /** @var Param $param */
+            foreach ($list as $param) {
+                if (isset(Yii::$app->request->post()[$param->name])
+                    && Yii::$app->request->post()[$param->name] != $param->value) {
+                    $param->value = Yii::$app->request->post()[$param->name];
+                    if ($param->save()) {
+                        $ret[] = $param->getAttributes();
+                    }
+                }
+            }
+            return json_encode([
+                'status' => true,
+                'data' => ['params' => $ret],
+                'message' => '',
+                'authorized' => true
+            ]);
+        }
+    }
+    
     public function actionLogin()
     {
         if (Yii::$app->request->isPost) {

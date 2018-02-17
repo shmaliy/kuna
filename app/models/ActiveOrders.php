@@ -35,6 +35,23 @@ use Yii;
  * @property boolean $hasActiveOrders
  * @property integer $tradeRecommendation
  * @property double $priceDiff
+ *
+ * @property string $param_market
+ * @property string $param_baseCurrency
+ * @property string $param_quotCurrency
+ * @property int $param_iterationTimeout
+ * @property int $param_minSellLevel
+ * @property int $param_sellLevel
+ * @property int $param_trading
+ * @property int $param_buyNow
+ * @property int $param_buy
+ * @property int $param_wait
+ * @property int $param_sell
+ * @property int $param_sellNow
+ * @property int $param_sellOrderNow
+ * @property int $param_buyOrderNow
+ * @property int $param_buyOrderLifetime
+ * @property int $param_sellOrderLifetime
  */
 class ActiveOrders extends \yii\db\ActiveRecord
 {
@@ -68,6 +85,25 @@ class ActiveOrders extends \yii\db\ActiveRecord
     public $hasActiveOrders = false;
     public $tradeRecommendation = self::D_WAIT;
     
+    
+    // params
+    public $param_market;
+    public $param_baseCurrency;
+    public $param_quotCurrency;
+    public $param_iterationTimeout;
+    public $param_minSellLevel;
+    public $param_sellLevel;
+    public $param_trading;
+    public $param_buyNow;
+    public $param_buy;
+    public $param_wait;
+    public $param_sell;
+    public $param_sellNow;
+    public $param_sellOrderNow;
+    public $param_buyOrderNow;
+    public $param_buyOrderLifetime;
+    public $param_sellOrderLifetime;
+    
     public static $accountsKey = 'accounts';
     public static $accountMap = [
         'currency', 'balance', 'locked'
@@ -99,8 +135,8 @@ class ActiveOrders extends \yii\db\ActiveRecord
             [['now'], 'default', 'value' => self::getNow()],
             [['me'], 'default', 'value' => self::me()],
 //            [['orders'], 'default', 'value' => self::getActiveOrders()],
-            [['trades'], 'default', 'value' => self::getTradingHistory()],
-            [['ticker'], 'default', 'value' => self::getTicker()],
+            [['trades'], 'default', 'value' => $this->getTradingHistory()],
+            [['ticker'], 'default', 'value' => $this->getTicker()],
             
             [['me', 'orders', 'trades', 'ticker', 'targetAccounts'], 'ifArray'],
             [['mainCurrencyBalance', 'quotCurrencyBalance', 'priceDiff'], 'number'],
@@ -109,7 +145,28 @@ class ActiveOrders extends \yii\db\ActiveRecord
             [['tradeRecommendation'], 'in', 'range' => [self::D_BUY_NOW, self::D_BUY, self::D_WAIT,
                 self::D_SELL, self::D_SELL_NOW]],
             [['now', 'me', 'trades', 'ticker'], 'required'],
+            [['param_market'], 'in', 'range' => MarketSeek::$_markets],
+            [['param_market', 'param_baseCurrency', 'param_quotCurrency', 'param_iterationTimeout',
+                'param_minSellLevel', 'param_sellLevel', 'param_trading', 'param_buyNow',
+                'param_buy', 'param_wait', 'param_sell', 'param_sellNow', 'param_sellOrderNow',
+                'param_buyOrderNow', 'param_buyOrderLifetime', 'param_sellOrderLifetime'], 'string'],
+            [['param_market', 'param_baseCurrency', 'param_quotCurrency', 'param_iterationTimeout',
+                'param_minSellLevel', 'param_sellLevel', 'param_trading', 'param_buyNow',
+                'param_buy', 'param_wait', 'param_sell', 'param_sellNow', 'param_sellOrderNow',
+                'param_buyOrderNow', 'param_buyOrderLifetime', 'param_sellOrderLifetime'], 'required'],
         ];
+    }
+    
+    public function setParams()
+    {
+        $params = new Param();
+        $params->userId = $this->userId;
+        $params = $params->getParams();
+        
+        foreach ($params as $param) {
+            $this->{'param_'.$param['name']} = $param['value'];
+        }
+        return $this;
     }
 
     /**
@@ -159,10 +216,10 @@ class ActiveOrders extends \yii\db\ActiveRecord
                         if ($val['locked'] > 0) {
                             $this->hasActiveOrders = true;
                         }
-                        if ($key == self::K_MAIN_CURRENCY) {
+                        if ($key == $this->param_baseCurrency) {
                             $this->mainCurrencyBalance = $val['balance'];
                         }
-                        if ($key == self::K_QUOT_CURRENCY) {
+                        if ($key == $this->param_quotCurrency) {
                             $this->quotCurrencyBalance = $val['balance'];
                         }
                     }
@@ -208,26 +265,34 @@ class ActiveOrders extends \yii\db\ActiveRecord
     
     public function getActiveOrders()
     {
+        
         if ($this->hasActiveOrders) {
-            $this->orders = self::getApiClient()->signed()->activeOrders(self::K_DEFAULT_MARKET);
+            
+            try {
+                $this->orders = self::getApiClient()->signed()->activeOrders($this->param_market);
+            } catch (\GuzzleHttp\Exception\ClientException $e) {
+                $this->orders = [];
+                var_export($e->getMessage());
+            }
         } else {
             $this->orders = [];
         }
         return $this;
     }
     
-    public static function getTradingHistory()
+    public function getTradingHistory()
     {
         try {
-            return self::getApiClient()->signed()->myHistory(self::K_DEFAULT_MARKET);
+            return self::getApiClient()->signed()->myHistory($this->param_market);
         } catch (ClientException $e) {
             var_export($e->getMessage());
             return null;
         }
     }
     
-    public static function getTicker($market = self::K_DEFAULT_MARKET)
+    public function getTicker($market = null)
     {
+        if (is_null($market)) $market = $this->param_market;
         try {
             return self::getApiClient()->shared()->tickers($market);
         } catch (ClientException $e) {
@@ -259,7 +324,11 @@ class ActiveOrders extends \yii\db\ActiveRecord
         if ($order['side'] == self::ORDER_SIDE_BUY) {
             
             echo "\t\tIt's buy order, his lifetime is ", date("H:i:s", $orderLifetime), "\n";
-            if ($orderLifetime >= 600 && $order['price'] != $this->ticker['ticker']['last']) {
+            if (
+//                $orderLifetime >= $this->param_buyOrderLifetime
+//                && $this->param_buyOrderLifetime > 0
+//                &&
+                $order['price'] != $this->ticker['ticker']['last']) {
                 self::getApiClient()->signed()->cancelOrder($order['id']);
                 echo "\t\t[v]\t Order killed\n";
             } else {
@@ -267,7 +336,11 @@ class ActiveOrders extends \yii\db\ActiveRecord
             }
         } else {
             echo "\t\tIt's sell order, his lifetime is ", date("H:i:s", $orderLifetime), "\n";
-            if ($orderLifetime >= 1200 && $order['price'] > $this->ticker['ticker']['last']) {
+            if (
+//                $orderLifetime >= $this->param_sellOrderLifetime
+//                && $this->param_sellOrderLifetime > 0
+//                &&
+                $order['price'] > $this->ticker['ticker']['last']) {
                 self::getApiClient()->signed()->cancelOrder($order['id']);
                 echo "\t\t[v]\t Order killed\n";
             } else {
@@ -284,15 +357,16 @@ class ActiveOrders extends \yii\db\ActiveRecord
         
         $created = strtotime($this->trades['created_at']);
         $tradesPause = $this->now - $created;
-        $desiredPrice = $minPrice + self::MIN_SELL_LEVEL;
+        $desiredPrice = $minPrice + $this->param_sellLevel;
+        $desiredPriceSmooth = $minPrice + $this->param_minSellLevel;
         
-        echo "\t\t[>]\t Need to sell ", self::K_MAIN_CURRENCY, "\n";
+        echo "\t\t[>]\t Need to sell ", $this->param_baseCurrency, "\n";
         echo "\t\t Last bid has price: \t", $this->trades['price'], "\n";
         echo "\t\t Last bid pause: \t", date("d H:i:s", $tradesPause), "\n";
         echo "\t\t Current ticker price: \t", $this->ticker['ticker']['last'], "\n";
-        echo "\t\t Minimum desired price: \t", $desiredPrice, " (" , $desiredPrice - 10, ") ", "\n";
+        echo "\t\t Minimum desired price: \t", $desiredPrice, " (" , $desiredPriceSmooth, ") ", "\n";
         
-        if ($desiredPrice > $currPrice && $desiredPrice - $currPrice > 10 ) {
+        if ($desiredPrice > $currPrice && $desiredPrice - $currPrice > $desiredPrice - $desiredPriceSmooth ) {
             echo "\t\t[x] Sell impossible\n";
             return;
         } else {
@@ -300,25 +374,30 @@ class ActiveOrders extends \yii\db\ActiveRecord
                 echo "\t\t[-] Price is growing. Wait...\n";
                 return;
             } else {
-                try {
-                    $res = self::getApiClient()->signed()->createSellOrder(
-                        self::K_DEFAULT_MARKET,
-                        $this->mainCurrencyBalance,
-                        $this->ticker['ticker']['last']
-                    );
-                } catch (ClientException $e) {
-                    var_export($e->getMessage());
-                    echo "\n\t\t[x] Fix your bugs, idiot!!! \n";
-                    return;
-                }
-    
-                var_export($res);
-                
-                echo "\n\t\t[v] Sell order created...\n";
-                return;
+                return $this->sell();
             }
             
         }
+    }
+    
+    public function sell()
+    {
+        try {
+            $res = self::getApiClient()->signed()->createSellOrder(
+                $this->param_market,
+                $this->mainCurrencyBalance,
+                $this->ticker['ticker']['last']
+            );
+        } catch (ClientException $e) {
+            var_export($e->getMessage());
+            echo "\n\t\t[x] Fix your bugs, idiot!!! \n";
+            return;
+        }
+    
+        var_export($res);
+    
+        echo "\n\t\t[v] Sell order created...\n";
+        return;
     }
     
     public function tryToBuy()
@@ -326,12 +405,12 @@ class ActiveOrders extends \yii\db\ActiveRecord
         echo "\t\t [>] Maybe time to buy? \n";
         if ($this->tradeRecommendation == self::D_BUY_NOW || $this->tradeRecommendation == self::D_BUY) {
         
-            $volume = round(($this->quotCurrencyBalance - 10)/$this->ticker['ticker']['last'], 5);
-            echo "\t\t ->\t Trying to buy $volume ", self::K_MAIN_CURRENCY, "\n";
+            $volume = round(($this->quotCurrencyBalance - 3)/$this->ticker['ticker']['last'], 5);
+            echo "\t\t ->\t Trying to buy $volume ", $this->param_quotCurrency, "\n";
             try {
                 $res = self::getApiClient()->signed()->createBuyOrder(
-                    self::K_DEFAULT_MARKET,
-                    round(($this->quotCurrencyBalance - 10)/$this->ticker['ticker']['last'], 5, PHP_ROUND_HALF_DOWN),
+                    $this->param_market,
+                    round(($this->quotCurrencyBalance - 3)/$this->ticker['ticker']['last'], 5, PHP_ROUND_HALF_DOWN),
                     $this->ticker['ticker']['last']
                 );
             } catch (ClientException $e) {
@@ -363,7 +442,7 @@ class ActiveOrders extends \yii\db\ActiveRecord
             $prevValue = $prev->balance;
         }
         
-        if ($prevValue != $this->quotCurrencyBalance) {
+        if ($prevValue != round($this->quotCurrencyBalance, 2, 2)) {
             $curr = new Balance();
             $curr->userId = $this->userId;
             $curr->balance = $this->quotCurrencyBalance;
@@ -377,6 +456,12 @@ class ActiveOrders extends \yii\db\ActiveRecord
     {
         $this->globalInfo();
         $this->commonTickerAnalisis();
+        
+        if ($this->param_trading != 1) {
+            echo "\t\t [-] Bot in watch mode \t";
+            return;
+        }
+        
         if ($this->hasActiveOrders) {
         
             $this->orderDesicion();
@@ -400,12 +485,12 @@ class ActiveOrders extends \yii\db\ActiveRecord
     {
         echo "\tDate ", date("Y-m-d H:i:s", $this->now), "\n";
         echo "\tTrading account ", $this->me['email'], "\n";
-        echo "\tBase currency '", self::K_MAIN_CURRENCY, "' balance is ",
-            $this->mainCurrencyBalance, "\tin orders - ", $this->targetAccounts[self::K_MAIN_CURRENCY]['locked'],
-        "\ttotal = ", $this->mainCurrencyBalance + $this->targetAccounts[self::K_MAIN_CURRENCY]['locked'], "\n";
-        echo "\tQuot currency '", self::K_QUOT_CURRENCY, "' balance is ",
-            $this->quotCurrencyBalance, "\tin orders - ", $this->targetAccounts[self::K_QUOT_CURRENCY]['locked'],
-        "\ttotal = ", $this->quotCurrencyBalance + $this->targetAccounts[self::K_QUOT_CURRENCY]['locked'], "\n";
+        echo "\tBase currency '", $this->param_baseCurrency, "' balance is ",
+            $this->mainCurrencyBalance, "\tin orders - ", $this->targetAccounts[$this->param_baseCurrency]['locked'],
+        "\ttotal = ", $this->mainCurrencyBalance + $this->targetAccounts[$this->param_baseCurrency]['locked'], "\n";
+        echo "\tQuot currency '", $this->param_quotCurrency, "' balance is ",
+            $this->quotCurrencyBalance, "\tin orders - ", $this->targetAccounts[$this->param_quotCurrency]['locked'],
+        "\ttotal = ", $this->quotCurrencyBalance + $this->targetAccounts[$this->param_quotCurrency]['locked'], "\n";
         echo "\n\n";
 //        var_export($this);
 //        echo "\n";
@@ -419,7 +504,7 @@ class ActiveOrders extends \yii\db\ActiveRecord
             $this->priceDiff = $this->ticker['ticker']['last'] - MarketSeek::getLastPrice();
             
             $seek = new MarketSeek();
-            $seek->tickerMarket = self::K_DEFAULT_MARKET;
+            $seek->tickerMarket = $this->param_market;
             $seek->ticker = $this->ticker;
             
             if ($this->priceDiff != 0) {
@@ -452,50 +537,50 @@ class ActiveOrders extends \yii\db\ActiveRecord
             echo "]\n\n";
             echo "\t\t GLOBAL RECOMMENDATION: ";
     
-            if ( $position <= 25 && $this->priceDiff < 0 ) {
+            if ( $position <= $this->param_buyNow && $this->priceDiff < 0 ) {
                 echo " WAIT, price is going down \n";
                 $this->tradeRecommendation = self::D_WAIT;
             }
             
-            if ( $position <= 25 && $this->priceDiff >= 0 ) {
+            if ( $position <= $this->param_buyNow && $this->priceDiff >= 0 ) {
                 echo " BUY!!!! \n";
                 $this->tradeRecommendation = self::D_BUY_NOW;
             }
             
             
-            if ( $position <= 40 && $position > 25  && $this->priceDiff < 0 ) {
+            if ( $position <= $this->param_buy && $position > $this->param_buyNow  && $this->priceDiff < 0 ) {
                 echo " WAIT, price is going down \n";
                 $this->tradeRecommendation = self::D_WAIT;
             }
-            if ( $position <= 40 && $position > 25 && $this->priceDiff >= 0 ) {
+            if ( $position <= $this->param_buy && $position > $this->param_buyNow && $this->priceDiff >= 0 ) {
                 echo " BUY or WAIT \n";
                 $this->tradeRecommendation = self::D_BUY;
             }
             
             
-            if ( $position <= 60 && $position > 40 ) {
+            if ( $position <= $this->param_wait && $position > $this->param_buy ) {
                 echo " WAIT\n";
                 $this->tradeRecommendation = self::D_WAIT;
             }
             
             
-            if ( $position <= 90 && $position > 60 && $this->priceDiff > 0) {
+            if ( $position <= $this->param_sell && $position > $this->param_wait && $this->priceDiff > 0) {
                 echo " WAIT, price is rising \n";
                 $this->tradeRecommendation = self::D_WAIT;
             }
             
-            if ( $position <= 90 && $position > 60 && $this->priceDiff <= 0) {
+            if ( $position <= $this->param_sell && $position > $this->param_wait && $this->priceDiff <= 0) {
                 echo " SELL \n";
                 $this->tradeRecommendation = self::D_SELL;
             }
             
             
-            if ( $position <= 100 && $position > 90 && $this->priceDiff > 0) {
+            if ( $position <= $this->param_sellNow && $position > $this->param_sell && $this->priceDiff > 0) {
                 echo " WAIT, price is rising \n";
                 $this->tradeRecommendation = self::D_WAIT;
             }
             
-            if ( $position <= 100 && $position > 90 && $this->priceDiff <= 0) {
+            if ( $position <= $this->param_sellNow && $position > $this->param_sell && $this->priceDiff <= 0) {
                 echo " SELL!!!! \n";
                 $this->tradeRecommendation = self::D_SELL_NOW;
             }
@@ -522,6 +607,7 @@ class ActiveOrders extends \yii\db\ActiveRecord
         $trade = new self;
         $trade->loadDefaultValues();
         $trade->userId = $userId;
+        $trade->setParams();
         if ($trade->validate()) {
             $trade->getActiveOrders()->whatsToDo();
         } else {
@@ -529,7 +615,7 @@ class ActiveOrders extends \yii\db\ActiveRecord
         }
         
         echo "\n###########################################\n\n\n";
-        sleep(10);
+        sleep($trade->param_iterationTimeout);
         self::trade($userId);
     }
 }
