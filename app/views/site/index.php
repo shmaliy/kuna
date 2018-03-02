@@ -129,9 +129,9 @@ $this->title = 'Market overview';
                         
                         $.each(data_.charts, function(k, v) {
                             
-                            var bl = 0;
-                            var ssl = 0;
-                            var sl = 0;
+                            var bl = v.low;
+                            var ssl = v.low;
+                            var sl = v.low;
                             if (data_.iteration.trades.side == 'bid') {
                                 bl = parseInt(data_.iteration.trades.price);
                                 $.each(data_.params, function(k, p) {
