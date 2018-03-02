@@ -115,62 +115,62 @@ $this->title = 'Market overview';
 <script>
     $(function () {
 
-        var chartData = {
-            animationEnabled: true,
-            theme: "dark2",
-            title:{
-                text: "<?php echo end($data)['last']; ?>"
-            },
-            axisX:{
-                valueFormatString: "HH:mm:ss"
-            },
-            <?php
-            $min = end($data)['last'];
-            foreach ($data as $l) {
-                if ($l['last'] < $min) $min = $l['last'];
-            }
-            ?>
-            axisY: {
-                title: "Rate",
-                suffix: "UAH",
-                minimum: <?php echo $min; ?>
-            },
-            toolTip:{
-                shared:true
-            },
-            legend:{
-                cursor:"pointer",
-                verticalAlign: "bottom",
-                horizontalAlign: "left",
-                dockInsidePlotArea: true,
-                itemclick: toogleDataSeries
-            },
-            data: [
-                {
-                    type: "line",
-                    showInLegend: true,
-                    name: "Price",
-                    color: "#ff6600",
-                    yValueFormatString: "#",
-
-                    dataPoints: [
-                        <?php foreach ($data as $i=>$r): ?>
-                        { x: new Date(<?php echo $r['timestamp']*1000; ?>), y: <?php echo $r['last']; ?> }<?php if ($i-1 < count($data)) echo ", "; ?>
-                        <?php endforeach; ?>
-                    ]
-                }
-            ]
-        };
-        $('.chart').CanvasJSChart(chartData);
-
-        function toogleDataSeries(e){
-            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                e.dataSeries.visible = false;
-            } else{
-                e.dataSeries.visible = true;
-            }
-            e.chart.render();
-        }
+//        var chartData = {
+//            animationEnabled: true,
+//            theme: "dark2",
+//            title:{
+//                text: "<?php //echo end($data)['last']; ?>//"
+//            },
+//            axisX:{
+//                valueFormatString: "HH:mm:ss"
+//            },
+//            <?php
+//            $min = end($data)['last'];
+//            foreach ($data as $l) {
+//                if ($l['last'] < $min) $min = $l['last'];
+//            }
+//            ?>
+//            axisY: {
+//                title: "Rate",
+//                suffix: "UAH",
+//                minimum: <?php //echo $min; ?>
+//            },
+//            toolTip:{
+//                shared:true
+//            },
+//            legend:{
+//                cursor:"pointer",
+//                verticalAlign: "bottom",
+//                horizontalAlign: "left",
+//                dockInsidePlotArea: true,
+//                itemclick: toogleDataSeries
+//            },
+//            data: [
+//                {
+//                    type: "line",
+//                    showInLegend: true,
+//                    name: "Price",
+//                    color: "#ff6600",
+//                    yValueFormatString: "#",
+//
+//                    dataPoints: [
+//                        <?php //foreach ($data as $i=>$r): ?>
+//                        { x: new Date(<?php //echo $r['timestamp']*1000; ?>//), y: <?php //echo $r['last']; ?>// }<?php //if ($i-1 < count($data)) echo ", "; ?>
+<!--                        --><?php //endforeach; ?>
+//                    ]
+//                }
+//            ]
+//        };
+//        $('.chart').CanvasJSChart(chartData);
+//
+//        function toogleDataSeries(e){
+//            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+//                e.dataSeries.visible = false;
+//            } else{
+//                e.dataSeries.visible = true;
+//            }
+//            e.chart.render();
+//        }
         
         function onloadInit()
         {
