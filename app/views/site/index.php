@@ -190,7 +190,7 @@ $this->title = 'Market overview';
                         });
                         console.log(dataTable);
                         
-                        var data = google.visualization.DataTable();
+                        var data = new google.visualization.DataTable();
                         data.addColumn('number', 'Rate');
                         data.addColumn('string', 'Time');
                         data.addRows(dataTable);
