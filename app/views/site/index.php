@@ -176,8 +176,8 @@ $this->title = 'Market overview';
         {
             $.ajax('/site/ticker', {
                 method : 'POST',
-                success : function (data) {
-                    data = $.parseJSON(data);
+                success : function (data_) {
+                    data_ = $.parseJSON(data_);
 
                     google.charts.load('current', {'packages':['corechart']});
                     google.charts.setOnLoadCallback(drawChart);
@@ -185,7 +185,7 @@ $this->title = 'Market overview';
                     function drawChart() {
                         var dataTable = [['Rate', 'Time']];
                         
-                        $.each(data.charts, function(k, v) {
+                        $.each(data_.charts, function(k, v) {
                             dataTable.push([v.last, v.time]);
                         });
                         
@@ -203,7 +203,7 @@ $this->title = 'Market overview';
                     }
                     
                     
-                    console.log(data);
+                    console.log(data_);
 //                    var chartData = {
 //                        animationEnabled: false,
 //                        theme: "dark2",
@@ -256,7 +256,7 @@ $this->title = 'Market overview';
 //                        };
 //                    });
 //                    $('.chart').CanvasJSChart(chartData);
-                    Interface.construct({data : data});
+                    Interface.construct({data : data_});
                 }
             });
         }
