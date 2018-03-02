@@ -160,9 +160,10 @@ $this->title = 'Market overview';
                         data.addRows(dataTable);
 
                         var options = {
-                            title: now.last + ' (' + perc + ' %)',
+                            title: now.last + ' (' + parseInt(perc) + ' %)',
                             curveType: 'function',
-                            legend: { position: 'bottom' }
+                            legend: { position: 'bottom' },
+                            is3D : true
                         };
 
                         var chart = new google.visualization.LineChart(document.getElementById('chart'));
