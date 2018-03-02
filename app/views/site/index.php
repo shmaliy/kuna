@@ -14,7 +14,7 @@ $this->title = 'Market overview';
         <div class="row">
             <div class="col-md-8 col-sm-12">
                 <h1>Eth/Uah chart</h1>
-                <div id="chart" class="chart" style="height: 470px; width: 100%;"></div>
+                <div id="chart" class="chart" style="height: 600px; width: 100%;"></div>
             </div>
             <div class="col-md-4 col-sm-12" id="overview">
                 <h1>Bot Overview</h1>
