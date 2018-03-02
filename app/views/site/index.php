@@ -163,7 +163,9 @@ $this->title = 'Market overview';
                             title: now.last + ' (' + parseInt(perc) + ' %)',
                             curveType: 'function',
                             legend: { position: 'bottom' },
-                            is3D : true
+                            is3D : true,
+                            height : 600,
+                            width : '100%'
                         };
 
                         var chart = new google.visualization.LineChart(document.getElementById('chart'));
