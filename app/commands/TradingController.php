@@ -66,9 +66,9 @@ class TradingController extends Controller
                 }
         
                 $path = dirname(dirname(__FILE__));
-                $cmd = "php " . $path . '/yii trading/trade ' . $userId . ' > /dev/null 2>&1 &';
+                $cmd = $path . '/yii trading/trade ' . $userId . ' > /dev/null 2>&1 &';
                 echo $cmd, "\n";
-                exec($cmd);
+                shell_exec($cmd);
         
             }
             catch(\Exception $e) {}
