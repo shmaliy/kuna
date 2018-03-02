@@ -14,7 +14,7 @@ $this->title = 'Market overview';
         <div class="row">
             <div class="col-md-8 col-sm-12">
                 <h1>Eth/Uah chart</h1>
-                <div class="chart" style="height: 470px; width: 100%;"></div>
+                <div id="chart" class="chart" style="height: 470px; width: 100%;"></div>
             </div>
             <div class="col-md-4 col-sm-12" id="overview">
                 <h1>Bot Overview</h1>
@@ -179,82 +179,83 @@ $this->title = 'Market overview';
                 success : function (data) {
                     data = $.parseJSON(data);
 
-//                    google.charts.load('current', {'packages':['corechart']});
-//                    google.charts.setOnLoadCallback(drawChart);
-//
-//                    function drawChart() {
-//                        var data = google.visualization.arrayToDataTable([
-//                            ['Year', 'Sales', 'Expenses'],
-//                            ['2004',  1000,      400],
-//                            ['2005',  1170,      460],
-//                            ['2006',  660,       1120],
-//                            ['2007',  1030,      540]
-//                        ]);
-//
-//                        var options = {
-//                            title: 'Company Performance',
-//                            curveType: 'function',
-//                            legend: { position: 'bottom' }
-//                        };
+                    google.charts.load('current', {'packages':['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
 
-//                        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-//
-//                        chart.draw(data, options);
+                    function drawChart() {
+                        var dataTable = [['Rate', 'Time']];
+                        
+                        $.each(data.charts, function(k, v) {
+                            dataTable.push([v.last, v.time]);
+                        });
+                        
+                        var data = google.visualization.arrayToDataTable(dataTable);
+
+                        var options = {
+                            title: 'Company Performance',
+                            curveType: 'function',
+                            legend: { position: 'bottom' }
+                        };
+
+                        var chart = new google.visualization.LineChart(document.getElementById('chart'));
+
+                        chart.draw(data, options);
+                    }
                     
                     
                     console.log(data);
-                    var chartData = {
-                        animationEnabled: false,
-                        theme: "dark2",
-                        title:{
-                            text: data.curr
-                        },
-                        axisX:{
-                            valueFormatString: "HH:mm:ss"
-                        },
-                        <?php
-                        $min = end($data)['last'];
-                        foreach ($data as $l) {
-                            if ($l['last'] < $min) $min = $l['last'];
-                        }
-                        ?>
-                        axisY: {
-                            title: "Rate",
-                            suffix: "UAH",
-                            minimum: data.min
-                        },
-                        toolTip:{
-                            shared:true
-                        },
-                        legend:{
-                            cursor:"pointer",
-                            verticalAlign: "bottom",
-                            horizontalAlign: "left",
-                            dockInsidePlotArea: true,
-                            itemclick: toogleDataSeries
-                        },
-                        data: [
-                            {
-                                type: "line",
-                                showInLegend: true,
-                                name: "Price",
-                                color: "#ff6600",
-                                yValueFormatString: "#",
-
-                                dataPoints: [
-
-                                ]
-                            }
-                        ]
-                    };
-
-                    $.each(data.charts, function(k, v) {
-                        chartData.data[0].dataPoints[chartData.data[0].dataPoints.length] = {
-                            x : new Date(parseInt(v.timestamp)*1000),
-                            y : parseInt(v.last)
-                        };
-                    });
-                    $('.chart').CanvasJSChart(chartData);
+//                    var chartData = {
+//                        animationEnabled: false,
+//                        theme: "dark2",
+//                        title:{
+//                            text: data.curr
+//                        },
+//                        axisX:{
+//                            valueFormatString: "HH:mm:ss"
+//                        },
+//                        <?php
+//                        $min = end($data)['last'];
+//                        foreach ($data as $l) {
+//                            if ($l['last'] < $min) $min = $l['last'];
+//                        }
+//                        ?>
+//                        axisY: {
+//                            title: "Rate",
+//                            suffix: "UAH",
+//                            minimum: data.min
+//                        },
+//                        toolTip:{
+//                            shared:true
+//                        },
+//                        legend:{
+//                            cursor:"pointer",
+//                            verticalAlign: "bottom",
+//                            horizontalAlign: "left",
+//                            dockInsidePlotArea: true,
+//                            itemclick: toogleDataSeries
+//                        },
+//                        data: [
+//                            {
+//                                type: "line",
+//                                showInLegend: true,
+//                                name: "Price",
+//                                color: "#ff6600",
+//                                yValueFormatString: "#",
+//
+//                                dataPoints: [
+//
+//                                ]
+//                            }
+//                        ]
+//                    };
+//
+//                    $.each(data.charts, function(k, v) {
+//                        chartData.data[0].dataPoints[chartData.data[0].dataPoints.length] = {
+//                            x : new Date(parseInt(v.timestamp)*1000),
+//                            y : parseInt(v.last)
+//                        };
+//                    });
+//                    $('.chart').CanvasJSChart(chartData);
                     Interface.construct({data : data});
                 }
             });
