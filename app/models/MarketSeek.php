@@ -159,6 +159,7 @@ class MarketSeek extends \yii\db\ActiveRecord
             ->where('market = :m', [':m' => $this->market])
             ->andWhere('day = :d', [':d' => $currDay->day])
             ->orderBy('timestamp')
+            ->limit(20)
             ->all();
         $ret = [];
         /** @var MarketSeek $row */
