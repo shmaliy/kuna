@@ -114,64 +114,6 @@ $this->title = 'Market overview';
 
 <script>
     $(function () {
-
-//        var chartData = {
-//            animationEnabled: true,
-//            theme: "dark2",
-//            title:{
-//                text: "<?php //echo end($data)['last']; ?>//"
-//            },
-//            axisX:{
-//                valueFormatString: "HH:mm:ss"
-//            },
-//            <?php
-//            $min = end($data)['last'];
-//            foreach ($data as $l) {
-//                if ($l['last'] < $min) $min = $l['last'];
-//            }
-//            ?>
-//            axisY: {
-//                title: "Rate",
-//                suffix: "UAH",
-//                minimum: <?php //echo $min; ?>
-//            },
-//            toolTip:{
-//                shared:true
-//            },
-//            legend:{
-//                cursor:"pointer",
-//                verticalAlign: "bottom",
-//                horizontalAlign: "left",
-//                dockInsidePlotArea: true,
-//                itemclick: toogleDataSeries
-//            },
-//            data: [
-//                {
-//                    type: "line",
-//                    showInLegend: true,
-//                    name: "Price",
-//                    color: "#ff6600",
-//                    yValueFormatString: "#",
-//
-//                    dataPoints: [
-//                        <?php //foreach ($data as $i=>$r): ?>
-//                        { x: new Date(<?php //echo $r['timestamp']*1000; ?>//), y: <?php //echo $r['last']; ?>// }<?php //if ($i-1 < count($data)) echo ", "; ?>
-<!--                        --><?php //endforeach; ?>
-//                    ]
-//                }
-//            ]
-//        };
-//        $('.chart').CanvasJSChart(chartData);
-//
-//        function toogleDataSeries(e){
-//            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-//                e.dataSeries.visible = false;
-//            } else{
-//                e.dataSeries.visible = true;
-//            }
-//            e.chart.render();
-//        }
-        
         function onloadInit()
         {
             $.ajax('/site/ticker', {
@@ -188,7 +130,6 @@ $this->title = 'Market overview';
                         $.each(data_.charts, function(k, v) {
                             dataTable.push([v.time, v.last]);
                         });
-                        console.log(data_.charts.slice(-1)[0]);
                         
                         var now = data_.charts.slice(-1)[0];
                         var perc = (now.last - now.low)/(now.high - now.low) * 100;
@@ -199,7 +140,7 @@ $this->title = 'Market overview';
                         data.addRows(dataTable);
 
                         var options = {
-                            title: now.last + '(' + perc + ' %)',
+                            title: now.last + ' (' + perc + ' %)',
                             curveType: 'function',
                             legend: { position: 'bottom' }
                         };
@@ -210,58 +151,6 @@ $this->title = 'Market overview';
                     }
                     
                     
-//                    var chartData = {
-//                        animationEnabled: false,
-//                        theme: "dark2",
-//                        title:{
-//                            text: data.curr
-//                        },
-//                        axisX:{
-//                            valueFormatString: "HH:mm:ss"
-//                        },
-//                        <?php
-//                        $min = end($data)['last'];
-//                        foreach ($data as $l) {
-//                            if ($l['last'] < $min) $min = $l['last'];
-//                        }
-//                        ?>
-//                        axisY: {
-//                            title: "Rate",
-//                            suffix: "UAH",
-//                            minimum: data.min
-//                        },
-//                        toolTip:{
-//                            shared:true
-//                        },
-//                        legend:{
-//                            cursor:"pointer",
-//                            verticalAlign: "bottom",
-//                            horizontalAlign: "left",
-//                            dockInsidePlotArea: true,
-//                            itemclick: toogleDataSeries
-//                        },
-//                        data: [
-//                            {
-//                                type: "line",
-//                                showInLegend: true,
-//                                name: "Price",
-//                                color: "#ff6600",
-//                                yValueFormatString: "#",
-//
-//                                dataPoints: [
-//
-//                                ]
-//                            }
-//                        ]
-//                    };
-//
-//                    $.each(data.charts, function(k, v) {
-//                        chartData.data[0].dataPoints[chartData.data[0].dataPoints.length] = {
-//                            x : new Date(parseInt(v.timestamp)*1000),
-//                            y : parseInt(v.last)
-//                        };
-//                    });
-//                    $('.chart').CanvasJSChart(chartData);
                     Interface.construct({data : data_});
                 }
             });
