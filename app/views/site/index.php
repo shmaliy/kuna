@@ -164,8 +164,7 @@ $this->title = 'Market overview';
                             curveType: 'function',
                             legend: { position: 'bottom' },
                             is3D : true,
-                            height : 600,
-                            width : '100%'
+                            height : 600
                         };
 
                         var chart = new google.visualization.LineChart(document.getElementById('chart'));
