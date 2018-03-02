@@ -190,13 +190,16 @@ $this->title = 'Market overview';
                         });
                         console.log(data_.charts.slice(-1)[0]);
                         
+                        var now = data_.charts.slice(-1)[0];
+                        var perc = (now.last - now.low)/(now.high - now.low) * 100;
+                        
                         var data = new google.visualization.DataTable();
                         data.addColumn('string', 'Time');
                         data.addColumn('number', 'Rate');
                         data.addRows(dataTable);
 
                         var options = {
-                            title: 'Company Performance',
+                            title: now.last + '(' + perc + ' %)',
                             curveType: 'function',
                             legend: { position: 'bottom' }
                         };
