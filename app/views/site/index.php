@@ -130,8 +130,8 @@ $this->title = 'Market overview';
                         $.each(data_.charts, function(k, v) {
                             
                             var bl = 0;
-                            if (data_.trades.side == 'bid') {
-                                bl = parseInt(data_.trades.price);
+                            if (data_.iteration.trades.side == 'bid') {
+                                bl = parseInt(data_.iteration.trades.price);
                             }
                             
                             dataTable.push([v.time, bl, v.last]);
