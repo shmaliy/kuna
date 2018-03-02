@@ -158,7 +158,7 @@ class MarketSeek extends \yii\db\ActiveRecord
         $list = self::find()
             ->where('market = :m', [':m' => $this->market])
             ->andWhere('day = :d', [':d' => $currDay->day])
-            ->orderBy('timestamp')
+            ->orderBy('timestamp desc')
             ->limit(20)
             ->all();
         $ret = [];
