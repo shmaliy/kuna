@@ -130,11 +130,22 @@ $this->title = 'Market overview';
                         $.each(data_.charts, function(k, v) {
                             
                             var bl = 0;
+                            var ssl = 0;
+                            var sl = 0;
                             if (data_.iteration.trades.side == 'bid') {
                                 bl = parseInt(data_.iteration.trades.price);
+                                $.each(data_.params, function(k, p) {
+                                    if (p.name == 'minSellLevel') {
+                                        ssl = parseInt(data_.iteration.trades.price) + parseInt(p.value);
+                                    }
+
+                                    if (p.name == 'sellLevel') {
+                                        sl = parseInt(data_.iteration.trades.price) + parseInt(p.value);
+                                    }
+                                });
                             }
                             
-                            dataTable.push([v.time, bl, v.last]);
+                            dataTable.push([v.time, bl, ssl, sl, v.last]);
                         });
                         
                         var now = data_.charts.slice(-1)[0];
@@ -143,6 +154,8 @@ $this->title = 'Market overview';
                         var data = new google.visualization.DataTable();
                         data.addColumn('string', 'Time');
                         data.addColumn('number', 'Bid Level');
+                        data.addColumn('number', 'Min Sell Level');
+                        data.addColumn('number', 'Sell Level');
                         data.addColumn('number', 'Rate');
                         data.addRows(dataTable);
 
