@@ -188,7 +188,7 @@ $this->title = 'Market overview';
                         $.each(data_.charts, function(k, v) {
                             dataTable.push([v.time, v.last]);
                         });
-                        console.log(dataTable);
+                        console.log(data_.charts.last());
                         
                         var data = new google.visualization.DataTable();
                         data.addColumn('string', 'Time');
@@ -207,7 +207,6 @@ $this->title = 'Market overview';
                     }
                     
                     
-                    console.log(data_);
 //                    var chartData = {
 //                        animationEnabled: false,
 //                        theme: "dark2",
