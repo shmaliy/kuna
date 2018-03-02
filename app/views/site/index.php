@@ -186,7 +186,7 @@ $this->title = 'Market overview';
                         var dataTable = [['Rate', 'Time']];
                         
                         $.each(data_.charts, function(k, v) {
-                            dataTable.push([v.last, v.time]);
+                            dataTable.push([parseInt(v.last), v.time]);
                         });
                         
                         var data = google.visualization.arrayToDataTable(dataTable);
