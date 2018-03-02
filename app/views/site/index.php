@@ -128,7 +128,13 @@ $this->title = 'Market overview';
                         var dataTable = [];
                         
                         $.each(data_.charts, function(k, v) {
-                            dataTable.push([v.time, v.last]);
+                            
+                            var bl = 0;
+                            if (data_.trades.side == 'bid') {
+                                bl = parseInt(data_.trades.price);
+                            }
+                            
+                            dataTable.push([v.time, bl, v.last]);
                         });
                         
                         var now = data_.charts.slice(-1)[0];
@@ -136,6 +142,7 @@ $this->title = 'Market overview';
                         
                         var data = new google.visualization.DataTable();
                         data.addColumn('string', 'Time');
+                        data.addColumn('number', 'Bid Level');
                         data.addColumn('number', 'Rate');
                         data.addRows(dataTable);
 
