@@ -186,7 +186,7 @@ $this->title = 'Market overview';
                         var dataTable = [];
                         
                         $.each(data_.charts, function(k, v) {
-                            dataTable.push([v.last, v.time]);
+                            dataTable.push([v.last.toString(), v.time]);
                         });
                         console.log(dataTable);
                         
