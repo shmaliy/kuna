@@ -191,7 +191,7 @@ $this->title = 'Market overview';
                         console.log(dataTable);
                         
                         var data = new google.visualization.DataTable();
-                        data.addColumn('string', 'Rate');
+                        data.addColumn('integer', 'Rate');
                         data.addColumn('string', 'Time');
                         data.addRows(dataTable);
 
