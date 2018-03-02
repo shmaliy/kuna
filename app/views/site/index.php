@@ -186,12 +186,12 @@ $this->title = 'Market overview';
                         var dataTable = [];
                         
                         $.each(data_.charts, function(k, v) {
-                            dataTable.push([parseInt(v.last), v.time]);
+                            dataTable.push([v.last, v.time]);
                         });
                         console.log(dataTable);
                         
                         var data = new google.visualization.DataTable();
-                        data.addColumn('number', 'Rate');
+                        data.addColumn('string', 'Rate');
                         data.addColumn('string', 'Time');
                         data.addRows(dataTable);
 
